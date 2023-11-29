@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Swiggy Assignment</title>
+    <link rel="stylesheet" href="server.css">
+  </head>
+  <body>
+    <div class="container">
+      <br />
+      <h1>Attack & defend Game</h1>
+      
+      <!-- Input fields for player A -->
+      <h4>Fill playerA Health, Attack and Strength</h4>
+      <label for="playerAHealth">Health:</label>
+      <input type="number" id="playerAHealth" value="50">
+      <br/>
+      <label for="playerAStrength">Strength:</label>
+      <input type="number" id="playerAStrength" value="5">
+      <br/>
+      <label for="playerAAttack">Attack:</label>
+      <input type="number" id="playerAAttack" value="10">
+
+      <!-- Input fields for player B -->
+      <h4>Fill playerB Health, Attack and Strength</h4>
+      <label for="playerBHealth">Health:</label>
+      <input type="number" id="playerBHealth" value="100">
+      <br/>
+      <label for="playerBStrength">Strength:</label>
+      <input type="number" id="playerBStrength" value="10">
+      <br/>
+      <label for="playerBAttack">Attack:</label>
+      <input type="number" id="playerBAttack" value="5">
+
+      <div class="log" id="gameLog">
+        <!-- Game log will be displayed here -->
+      </div>
+      <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <script>
+      class Player {
+        constructor(health, strength, attack) {
+          this.health = health;
+          this.strength = strength;
+          this.attack = attack;
+        }
+
+        rollDice() {
+          return Math.floor(Math.random() * 6) + 1;
+        }
+
+        calculateAttack() {
+          const diceValue = this.rollDice();
+          return { attackValue: this.attack * diceValue, diceValue };
+        }
+
+        defend(attackValue) {
+          const diceValue = this.rollDice();
+          const defenseValue = this.strength * diceValue;
+          const damageTaken = Math.max(0, attackValue - defenseValue);
+          this.health -= damageTaken;
+          return { damageTaken, diceValue };
+        }
+      }
+
+      class MagicalArenaGame {
+        constructor(playerA, playerB) {
+          this.playerA = playerA;
+          this.playerB = playerB;
+          this.currentPlayer =
+            playerA.health < playerB.health ? playerA : playerB;
+          this.opponent = this.currentPlayer === playerA ? playerB : playerA;
+        }
+
+        startGame() {
+          const gameLog = document.getElementById("gameLog");
+          gameLog.innerHTML = ""; // Clear previous log
+
+          // Display starting health values
+          const startingValues = document.createElement("p");
+          startingValues.textContent = `Player A - Health: ${this.playerA.health}, Strength: ${this.playerA.strength}, Attack: ${this.playerA.attack} | Player B - Health: ${this.playerB.health}, Strength: ${this.playerB.strength}, Attack: ${this.playerB.attack}`;
+          gameLog.appendChild(startingValues);
+
+          while (this.playerA.health > 0 && this.playerB.health > 0) {
+            const { attackValue, diceValue } =
+              this.currentPlayer.calculateAttack();
+            const { damageTaken, diceValue: defenseDiceValue } =
+              this.opponent.defend(attackValue);
+
+            const logEntry = document.createElement("p");
+            logEntry.textContent = `${
+              this.currentPlayer === this.playerA ? "Player A" : "Player B"
+            } attacks with ${attackValue} damage using a dice value of ${diceValue}. ${
+              this.opponent === this.playerA ? "Player A" : "Player B"
+            } defends with a dice value of ${defenseDiceValue} and takes ${damageTaken} damage.`;
+            gameLog.appendChild(logEntry);
+
+            // Display updated health values
+            const updatedValues = document.createElement("p");
+            updatedValues.textContent = `Player A - Health: ${this.playerA.health}, Player B - Health: ${this.playerB.health}`;
+            gameLog.appendChild(updatedValues);
+
+            [this.currentPlayer, this.opponent] = [
+              this.opponent,
+              this.currentPlayer,
+            ];
+          }
+
+            const winner = this.playerA.health > 0 ? "Winner : Player A" : "Winner : Player B";
+          const winnerMsg = document.createElement("p");
+          winnerMsg.textContent = ` ${winner} wins the game!`;
+          gameLog.appendChild(winnerMsg);
+            
+        }
+      }
+
+      function startGame() {
+        const playerAHealth = parseInt(document.getElementById("playerAHealth").value);
+        const playerAStrength = parseInt(document.getElementById("playerAStrength").value);
+        const playerAAttack = parseInt(document.getElementById("playerAAttack").value);
+
+        const playerBHealth = parseInt(document.getElementById("playerBHealth").value);
+        const playerBStrength = parseInt(document.getElementById("playerBStrength").value);
+        const playerBAttack = parseInt(document.getElementById("playerBAttack").value);
+
+        const playerA = new Player(playerAHealth, playerAStrength, playerAAttack);
+        const playerB = new Player(playerBHealth, playerBStrength, playerBAttack);
+
+        const game = new MagicalArenaGame(playerA, playerB);
+        game.startGame();
+      }
+    </script>
+  </body>
+</html>
